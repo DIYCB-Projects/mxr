@@ -7,7 +7,7 @@ from __future__ import annotations
 from datetime import datetime  # noqa: TC003
 from os import getenv
 
-from sqlalchemy import ForeignKey, MetaData, String
+from sqlalchemy import ForeignKey, Index, MetaData, String, UniqueConstraint
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.ext.declarative import AbstractConcreteBase
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, object_session, relationship
@@ -100,6 +100,12 @@ class DrinksIngredientsAssociation(TableBase):
     """DrinksIngredientsAssociation."""
 
     __tablename__ = "drinks_ingredients_association"
+    __table_args__ = (
+        UniqueConstraint("drinks_id", "ingredients_id"),
+        Index("drinks_id", "drinks_id"),
+        Index("ingredients_id", "ingredients_id"),
+    )
+
     drinks_id: Mapped[int] = mapped_column(ForeignKey("drinks.id"))
     ingredients_id: Mapped[int] = mapped_column(ForeignKey("ingredients.id"))
     special_key: Mapped[str | None] = mapped_column(String(50))
