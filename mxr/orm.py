@@ -59,10 +59,13 @@ class Drinks(TableBase):
 
     # fmt: off
 
-    name:           Mapped[str]
-    garnish:        Mapped[str | None]
-    ingredients:    Mapped[str]
-    preparation:    Mapped[str]
+    name:            Mapped[str]
+    preparation:     Mapped[str]
+    alcohol_content: Mapped[float | None]
+    data_source:     Mapped[str | None]
+    drink_type:      Mapped[str | None]
+    garnish:         Mapped[str | None]
+    glass:           Mapped[str | None]
 
     # fmt: on
 
