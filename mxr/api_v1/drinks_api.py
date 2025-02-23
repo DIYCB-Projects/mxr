@@ -6,7 +6,7 @@ from flask import Blueprint, Response, current_app, request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from mxr.orm import Drinks
+from mxr.orm import Drinks, Ingredients
 
 drinks = Blueprint("drinks", __name__, template_folder="templates")
 
@@ -20,7 +20,7 @@ def create_drink() -> Response:
         drink = Drinks(
             name=drink_data["name"],
             garnish=drink_data.get("garnish"),
-            ingredients=drink_data["ingredients"],
+            ingredients={Ingredients(name=ingredient["name"]) for ingredient in drink_data["ingredients"]},
             preparation=drink_data["preparation"],
         )
         session.add(drink)
@@ -36,18 +36,18 @@ def get_drinks() -> Response:
     with Session(current_app.config["ENGINE"]) as session:
         raw_drinks = session.execute(select(Drinks)).scalars().all()
 
-    drinks_data = json.dumps(
-        [
-            {
-                "id": drink.id,
-                "name": drink.name,
-                "garnish": drink.garnish,
-                "ingredients": drink.ingredients,
-                "preparation": drink.preparation,
-            }
-            for drink in raw_drinks
-        ]
-    )
+        drinks_data = json.dumps(
+            [
+                {
+                    "id": drink.id,
+                    "name": drink.name,
+                    "garnish": drink.garnish,
+                    "ingredients": sorted(ingredient.name for ingredient in drink.ingredients),
+                    "preparation": drink.preparation,
+                }
+                for drink in raw_drinks
+            ]
+        )
 
     return Response(status=201, response=drinks_data)
 
@@ -58,18 +58,18 @@ def get_drink(id: int) -> Response:
     with Session(current_app.config["ENGINE"]) as session:
         drink = session.execute(select(Drinks).where(Drinks.id == id)).scalars().one()
 
-    return Response(
-        status=201,
-        response=json.dumps(
-            {
-                "id": drink.id,
-                "name": drink.name,
-                "garnish": drink.garnish,
-                "ingredients": drink.ingredients,
-                "preparation": drink.preparation,
-            }
-        ),
-    )
+        return Response(
+            status=201,
+            response=json.dumps(
+                {
+                    "id": drink.id,
+                    "name": drink.name,
+                    "garnish": drink.garnish,
+                    "ingredients": sorted(ingredient.name for ingredient in drink.ingredients),
+                    "preparation": drink.preparation,
+                }
+            ),
+        )
 
 
 @drinks.route("/drinks/<int:id>", methods=["PUT"])
