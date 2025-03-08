@@ -4,12 +4,16 @@ from __future__ import annotations
 
 import sys
 import logging
+from typing import Literal, TYPE_CHECKING
 
 from sqlalchemy import URL, create_engine
 
 from alembic import context
 from mxr.orm import MXRDB, Drinks  # noqa: F401
 from mxr.common import get_url
+
+if TYPE_CHECKING:
+    from collections.abc import MutableMapping
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -49,7 +53,11 @@ def run_migrations_offline(url: URL) -> None:
 
 
 # This is part of the Alembic specification
-def include_name(name: str, type_: str, parent_names: list[str]) -> bool:  # noqa: ARG001
+def include_name(
+    name: str | None,
+    type_: Literal["schema", "table", "column", "index", "unique_constraint", "foreign_key_constraint"],
+    parent_names: MutableMapping[Literal["schema_name", "table_name", "schema_qualified_table_name"], str | None],  # noqa: ARG001
+) -> bool:
     """This filter table to be included in the migration.
 
     Args:
