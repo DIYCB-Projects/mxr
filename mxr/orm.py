@@ -11,6 +11,7 @@ from sqlalchemy import ForeignKey, Index, MetaData, String, UniqueConstraint
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.ext.declarative import AbstractConcreteBase
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, object_session, relationship
+from sqlalchemy.orm.collections import attribute_keyed_dict
 
 from mxr.common import utc_now
 
@@ -70,15 +71,20 @@ class Drinks(TableBase):
 
     # fmt: on
 
-    drinks_ingredients_associations: Mapped[set[DrinksIngredientsAssociation]] = relationship(
+    drinks_ingredients_associations: Mapped[dict[Ingredients, DrinksIngredientsAssociation]] = relationship(
+        "DrinksIngredientsAssociation",
         back_populates="drink",
+        collection_class=attribute_keyed_dict("ingredient"),
         cascade="all, delete-orphan",
     )
 
-    ingredients: AssociationProxy[set[Ingredients]] = association_proxy(
+    ingredients: AssociationProxy[dict[Ingredients, str]] = association_proxy(
         "drinks_ingredients_associations",
-        "ingredient",
-        creator=lambda ingredient_obj: DrinksIngredientsAssociation(ingredient=ingredient_obj),
+        "measurement",
+        creator=lambda ingredient_obj, measurement_str: DrinksIngredientsAssociation(
+            ingredient=ingredient_obj,
+            measurement=measurement_str,
+        ),
     )
 
 
@@ -108,7 +114,7 @@ class DrinksIngredientsAssociation(TableBase):
 
     drinks_id: Mapped[int] = mapped_column(ForeignKey("drinks.id"))
     ingredients_id: Mapped[int] = mapped_column(ForeignKey("ingredients.id"))
-    special_key: Mapped[str | None] = mapped_column(String(50))
+    measurement: Mapped[str | None] = mapped_column(String(50))
 
     drink: Mapped[Drinks] = relationship(back_populates="drinks_ingredients_associations")
 

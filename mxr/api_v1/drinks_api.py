@@ -20,7 +20,10 @@ def create_drink() -> Response:
         drink = Drinks(
             name=drink_data["name"],
             garnish=drink_data.get("garnish"),
-            ingredients={Ingredients(name=ingredient["name"]) for ingredient in drink_data["ingredients"]},
+            ingredients={
+                Ingredients(name=ingredient["name"]): ingredient["measurement"]
+                for ingredient in drink_data["ingredients"]
+            },
             preparation=drink_data["preparation"],
         )
         session.add(drink)
@@ -42,7 +45,9 @@ def get_drinks() -> Response:
                     "id": drink.id,
                     "name": drink.name,
                     "garnish": drink.garnish,
-                    "ingredients": sorted(ingredient.name for ingredient in drink.ingredients),
+                    "ingredients": {
+                        ingredient.name: measurement for ingredient, measurement in drink.ingredients.items()
+                    },
                     "preparation": drink.preparation,
                 }
                 for drink in raw_drinks
@@ -65,7 +70,9 @@ def get_drink(id: int) -> Response:
                     "id": drink.id,
                     "name": drink.name,
                     "garnish": drink.garnish,
-                    "ingredients": sorted(ingredient.name for ingredient in drink.ingredients),
+                    "ingredients": {
+                        ingredient.name: measurement for ingredient, measurement in drink.ingredients.items()
+                    },
                     "preparation": drink.preparation,
                 }
             ),
