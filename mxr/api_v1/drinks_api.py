@@ -10,7 +10,29 @@ from mxr.orm import Drinks, Ingredients
 
 drinks = Blueprint("drinks", __name__, template_folder="templates")
 
+# TODO(Richie): make Drinks and Ingredients json serializable
 
+
+def get_ingredients(drink: Drinks) -> dict[str, dict[str, str | float | None]]:
+    """Get the ingredients for a drink.
+
+    Args:
+        drink (Drinks): The drink to get the ingredients for.
+
+    Returns:
+        list[dict[str, str]]: A list of dictionaries containing the ingredient name and measurement.
+    """
+    return {
+        ingredient.name: {
+            "category": ingredient.category,
+            "alcohol_content": ingredient.alcohol_content,
+            "measurement": measurement,
+        }
+        for ingredient, measurement in drink.ingredients.items()
+    }
+
+
+# TODO(Richie): THis doesn't support egesting ingredients
 @drinks.route("/drinks", methods=["POST"])
 def create_drink() -> Response:
     """Create a drink."""
@@ -45,9 +67,7 @@ def get_drinks() -> Response:
                     "id": drink.id,
                     "name": drink.name,
                     "garnish": drink.garnish,
-                    "ingredients": {
-                        ingredient.name: measurement for ingredient, measurement in drink.ingredients.items()
-                    },
+                    "ingredients": get_ingredients(drink),
                     "preparation": drink.preparation,
                 }
                 for drink in raw_drinks
@@ -70,9 +90,7 @@ def get_drink(id: int) -> Response:
                     "id": drink.id,
                     "name": drink.name,
                     "garnish": drink.garnish,
-                    "ingredients": {
-                        ingredient.name: measurement for ingredient, measurement in drink.ingredients.items()
-                    },
+                    "ingredients": get_ingredients(drink),
                     "preparation": drink.preparation,
                 }
             ),

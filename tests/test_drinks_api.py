@@ -42,7 +42,10 @@ def test_get_drinks(client: FlaskClient) -> None:
             "id": 1,
             "name": "The best drink ever",
             "garnish": "A little umbrella",
-            "ingredients": {"bread": "100 ML", "love": "1 ML"},
+            "ingredients": {
+                "bread": {"category": "sweet", "alcohol_content": None, "measurement": "100 ML"},
+                "love": {"category": "sweet", "alcohol_content": None, "measurement": "1 ML"},
+            },
             "preparation": "Exuberant shaking",
         }
     ]
@@ -92,7 +95,10 @@ def test_get_drinks_id(client: FlaskClient) -> None:
         "id": 1,
         "name": "The best drink ever",
         "garnish": "A little umbrella",
-        "ingredients": {"bread": "100 ML", "love": "1 ML"},
+        "ingredients": {
+            "bread": {"category": "sweet", "alcohol_content": None, "measurement": "100 ML"},
+            "love": {"category": "sweet", "alcohol_content": None, "measurement": "1 ML"},
+        },
         "preparation": "Exuberant shaking",
     }
 
