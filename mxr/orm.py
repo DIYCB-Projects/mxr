@@ -94,7 +94,9 @@ class Ingredients(TableBase):
     __tablename__ = "ingredients"
 
     # fmt: off
-
+    __table_args__ = (
+        UniqueConstraint("name"),
+    )
     name:              Mapped[str]
     alcohol_content:   Mapped[float | None]
     category:          Mapped[str | None]
