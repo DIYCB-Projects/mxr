@@ -114,7 +114,7 @@ class DrinksIngredientsAssociation(TableBase):
 
     drinks_id: Mapped[int] = mapped_column(ForeignKey("drinks.id"))
     ingredients_id: Mapped[int] = mapped_column(ForeignKey("ingredients.id"))
-    measurement: Mapped[str | None] = mapped_column(String(50))
+    measurement: Mapped[str] = mapped_column(String(50))
 
     drink: Mapped[Drinks] = relationship(back_populates="drinks_ingredients_associations")
 
