@@ -48,6 +48,24 @@ def run_migrations_offline(url: URL) -> None:
         context.run_migrations()
 
 
+# This is part of the Alembic specification
+def include_name(name: str, type_: str, parent_names: list[str]) -> bool:  # noqa: ARG001
+    """This filter table to be included in the migration.
+
+    Args:
+        name (str): The name of the table.
+        type_ (str): The type of the table.
+        parent_names (list[str]): The names of the parent tables.
+
+    Returns:
+        bool: True if the table should be included, False otherwise.
+
+    """
+    if type_ == "schema":
+        return name == target_metadata.schema
+    return True
+
+
 def run_migrations_online(url: URL) -> None:
     """Run migrations in 'online' mode.
 
@@ -63,6 +81,7 @@ def run_migrations_online(url: URL) -> None:
             target_metadata=target_metadata,
             include_schemas=True,
             version_table_schema=MXRDB.schema_name,
+            include_name=include_name,
         )
 
         with context.begin_transaction():
