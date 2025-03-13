@@ -92,11 +92,9 @@ class Ingredients(TableBase):
     """Table for ingredients."""
 
     __tablename__ = "ingredients"
+    __table_args__ = (UniqueConstraint("name"),)
 
     # fmt: off
-    __table_args__ = (
-        UniqueConstraint("name"),
-    )
     name:              Mapped[str]
     alcohol_content:   Mapped[float | None]
     category:          Mapped[str | None]
@@ -114,10 +112,14 @@ class DrinksIngredientsAssociation(TableBase):
         Index("ingredients_id", "ingredients_id"),
     )
 
-    drinks_id: Mapped[int] = mapped_column(ForeignKey("drinks.id"))
+    # fmt: off
+
+    drinks_id:      Mapped[int] = mapped_column(ForeignKey("drinks.id"))
     ingredients_id: Mapped[int] = mapped_column(ForeignKey("ingredients.id"))
-    measurement: Mapped[str] = mapped_column(String(50))
+    measurement:    Mapped[str] = mapped_column(String(50))
 
-    drink: Mapped[Drinks] = relationship(back_populates="drinks_ingredients_associations")
+    drink:          Mapped[Drinks] = relationship(back_populates="drinks_ingredients_associations")
 
-    ingredient: Mapped[Ingredients] = relationship()
+    ingredient:     Mapped[Ingredients] = relationship()
+
+    # fmt: off
