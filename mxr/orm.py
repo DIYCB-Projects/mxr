@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-# I think we need this hear but I'm not sure
-# TODO(Richie): test once we have a working database
+# This is required because datetime is required during runtime fro sqlalchemy
 from datetime import datetime  # noqa: TC003
 from os import getenv
 
