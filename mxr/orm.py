@@ -71,7 +71,7 @@ class Drink(TableBase):
     # fmt: on
 
     drinks_ingredients_associations: Mapped[dict[Ingredient, DrinkIngredientAssociation]] = relationship(
-        "DrinksIngredientsAssociation",
+        "DrinkIngredientAssociation",
         back_populates="drink",
         collection_class=attribute_keyed_dict("ingredient"),
         cascade="all, delete-orphan",
@@ -102,7 +102,7 @@ class Ingredient(TableBase):
 
 
 class DrinkIngredientAssociation(TableBase):
-    """DrinksIngredientsAssociation."""
+    """DrinkIngredientAssociation."""
 
     __tablename__ = "drink_ingredient_associations"
     __table_args__ = (
