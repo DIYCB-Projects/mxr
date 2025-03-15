@@ -6,14 +6,14 @@ from flask import Blueprint, Response, current_app, request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from mxr.orm import Drinks, Ingredients
+from mxr.orm import Drink, Ingredient
 
 drinks = Blueprint("drinks", __name__, template_folder="templates")
 
 # TODO(Richie): make Drinks and Ingredients json serializable
 
 
-def get_ingredients(drink: Drinks) -> dict[str, dict[str, str | float | None]]:
+def get_ingredients(drink: Drink) -> dict[str, dict[str, str | float | None]]:
     """Get the ingredients for a drink.
 
     Args:
@@ -39,11 +39,11 @@ def create_drink() -> Response:
     drink_data = request.get_json()
 
     with Session(current_app.config["ENGINE"]) as session:
-        drink = Drinks(
+        drink = Drink(
             name=drink_data["name"],
             garnish=drink_data.get("garnish"),
             ingredients={
-                Ingredients(name=ingredient["name"]): ingredient["measurement"]
+                Ingredient(name=ingredient["name"]): ingredient["measurement"]
                 for ingredient in drink_data["ingredients"]
             },
             preparation=drink_data["preparation"],
@@ -59,7 +59,7 @@ def create_drink() -> Response:
 def get_drinks() -> Response:
     """Get the drinks."""
     with Session(current_app.config["ENGINE"]) as session:
-        raw_drinks = session.execute(select(Drinks)).scalars().all()
+        raw_drinks = session.execute(select(Drink)).scalars().all()
 
         drinks_data = json.dumps(
             [
@@ -81,7 +81,7 @@ def get_drinks() -> Response:
 def get_drink(id: int) -> Response:
     """Get a drink."""
     with Session(current_app.config["ENGINE"]) as session:
-        drink = session.execute(select(Drinks).where(Drinks.id == id)).scalars().one()
+        drink = session.execute(select(Drink).where(Drink.id == id)).scalars().one()
 
         return Response(
             status=201,
@@ -102,7 +102,7 @@ def update_drink(id: int) -> Response:
     """Update a drink."""
     drink_data = request.get_json()
     with Session(current_app.config["ENGINE"]) as session:
-        drink = session.execute(select(Drinks).where(Drinks.id == id)).scalars().one()
+        drink = session.execute(select(Drink).where(Drink.id == id)).scalars().one()
         drink.name = drink_data.get("name", drink.name)
         drink.garnish = drink_data.get("garnish", drink.garnish)
         drink.ingredients = drink_data.get("ingredients", drink.ingredients)

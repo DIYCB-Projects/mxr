@@ -9,7 +9,7 @@ from typing import Literal, TYPE_CHECKING
 from sqlalchemy import URL, create_engine
 
 from alembic import context
-from mxr.orm import MXRDB, Drinks  # noqa: F401
+from mxr.orm import MXRDB, Drink  # noqa: F401
 from mxr.common import get_url
 
 if TYPE_CHECKING:

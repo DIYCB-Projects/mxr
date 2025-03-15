@@ -53,7 +53,7 @@ class TableBase(AbstractConcreteBase, MXRDB, IdTimestampColumns):
     """Base class for all tables."""
 
 
-class Drinks(TableBase):
+class Drink(TableBase):
     """Table for drinks."""
 
     __tablename__ = "drinks"
@@ -70,24 +70,24 @@ class Drinks(TableBase):
 
     # fmt: on
 
-    drinks_ingredients_associations: Mapped[dict[Ingredients, DrinksIngredientsAssociation]] = relationship(
+    drinks_ingredients_associations: Mapped[dict[Ingredient, DrinkIngredientAssociation]] = relationship(
         "DrinksIngredientsAssociation",
         back_populates="drink",
         collection_class=attribute_keyed_dict("ingredient"),
         cascade="all, delete-orphan",
     )
 
-    ingredients: AssociationProxy[dict[Ingredients, str]] = association_proxy(
+    ingredients: AssociationProxy[dict[Ingredient, str]] = association_proxy(
         "drinks_ingredients_associations",
         "measurement",
-        creator=lambda ingredient_obj, measurement_str: DrinksIngredientsAssociation(
+        creator=lambda ingredient_obj, measurement_str: DrinkIngredientAssociation(
             ingredient=ingredient_obj,
             measurement=measurement_str,
         ),
     )
 
 
-class Ingredients(TableBase):
+class Ingredient(TableBase):
     """Table for ingredients."""
 
     __tablename__ = "ingredients"
@@ -101,10 +101,10 @@ class Ingredients(TableBase):
     # fmt: on
 
 
-class DrinksIngredientsAssociation(TableBase):
+class DrinkIngredientAssociation(TableBase):
     """DrinksIngredientsAssociation."""
 
-    __tablename__ = "drinks_ingredients_association"
+    __tablename__ = "drink_ingredient_associations"
     __table_args__ = (
         UniqueConstraint("drinks_id", "ingredients_id"),
         Index("drinks_id", "drinks_id"),
@@ -117,8 +117,8 @@ class DrinksIngredientsAssociation(TableBase):
     ingredients_id: Mapped[int] = mapped_column(ForeignKey("ingredients.id"))
     measurement:    Mapped[str] = mapped_column(String(50))
 
-    drink:          Mapped[Drinks] = relationship(back_populates="drinks_ingredients_associations")
+    drink:          Mapped[Drink] = relationship(back_populates="drinks_ingredients_associations")
 
-    ingredient:     Mapped[Ingredients] = relationship()
+    ingredient:     Mapped[Ingredient] = relationship()
 
     # fmt: off
