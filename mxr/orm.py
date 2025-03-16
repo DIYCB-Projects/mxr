@@ -56,6 +56,7 @@ class IdTimestampColumns:
 class TableBase(AbstractConcreteBase, MXRDB, IdTimestampColumns):
     """Base class for all tables."""
 
+
 # TODO(Richie): make this a mixin if we can
 class BaseLookupTable(IdTimestampColumns, AbstractConcreteBase, MXRDB):
     """A lookup table."""
