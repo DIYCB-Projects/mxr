@@ -4,13 +4,16 @@ from __future__ import annotations
 
 import sys
 import logging
-from typing import Literal, TYPE_CHECKING
+from typing import Literal, TYPE_CHECKING, Any
+from pathlib import Path
 
 from sqlalchemy import URL, create_engine
 
 from alembic import context
+from alembic.script import write_hooks
 from mxr.orm import MXRDB, Drink  # noqa: F401
 from mxr.common import get_url
+
 
 if TYPE_CHECKING:
     from collections.abc import MutableMapping
@@ -40,7 +43,7 @@ def dynamic_schema(filename: str, _options: dict[Any, Any]) -> None:
 def include_name(
     name: str | None,
     type_: Literal["schema", "table", "column", "index", "unique_constraint", "foreign_key_constraint"],
-    parent_names: MutableMapping[Literal["schema_name", "table_name", "schema_qualified_table_name"], str | None],  # noqa: ARG001
+    _parent_names: MutableMapping[Literal["schema_name", "table_name", "schema_qualified_table_name"], str | None],
 ) -> bool:
     """This filter table to be included in the migration.
 
