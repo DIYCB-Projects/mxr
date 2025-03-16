@@ -56,6 +56,9 @@ lint.ignore = [
     "I001",   # (perm) having a __init__ causes a lsp problem and is not needed for alembic
 ]
 
+[tool.ruff.lint.pep8-naming]
+extend-ignore-names = ["class_"]
+
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
