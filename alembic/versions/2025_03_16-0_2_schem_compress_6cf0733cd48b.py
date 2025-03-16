@@ -1,8 +1,8 @@
 """0.2 schem compress.
 
-Revision ID: d26c2878f9d7
+Revision ID: a540c124bbcc
 Revises:
-Create Date: 2025-03-16 14:14:27.853735
+Create Date: 2025-03-16 18:16:51.595105
 
 """
 
@@ -67,11 +67,11 @@ def upgrade() -> None:
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.ForeignKeyConstraint(
             ["drinks_id"],
-            ["richie_mxr.drinks.id"],
+            [f"{schema}.drinks.id"],
         ),
         sa.ForeignKeyConstraint(
             ["ingredients_id"],
-            ["richie_mxr.ingredients.id"],
+            [f"{schema}.ingredients.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("drinks_id", "ingredients_id"),

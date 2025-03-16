@@ -36,7 +36,8 @@ logging.basicConfig(
 def dynamic_schema(filename: str, _options: dict[Any, Any]) -> None:
     """Dynamic schema."""
     original_file = Path(filename).read_text()
-    dynamic_schema_file = original_file.replace(f"schema='{MXRDB.schema_name}'", "schema=schema")
+    dynamic_schema_file_part1 = original_file.replace(f"schema='{MXRDB.schema_name}'", "schema=schema")
+    dynamic_schema_file = dynamic_schema_file_part1.replace(f"'{MXRDB.schema_name}.", "f'{schema}.")
     Path(filename).write_text(dynamic_schema_file)
 
 
