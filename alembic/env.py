@@ -29,6 +29,14 @@ logging.basicConfig(
 )
 
 
+@write_hooks.register("dynamic_schema")
+def dynamic_schema(filename: str, _options: dict[Any, Any]) -> None:
+    """Dynamic schema."""
+    original_file = Path(filename).read_text()
+    dynamic_schema_file = original_file.replace(f"schema='{MXRDB.schema_name}'", "schema=schema")
+    Path(filename).write_text(dynamic_schema_file)
+
+
 def run_migrations_offline(url: URL) -> None:
     """Run migrations in 'offline' mode.
 
