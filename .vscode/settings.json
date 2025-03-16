@@ -4,6 +4,7 @@
     "associationproxy",
     "drivername",
     "gunicorn",
+    "kaggle",
     "levelname",
     "MXRDB",
     "mypy",
