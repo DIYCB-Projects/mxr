@@ -26,7 +26,7 @@ def get_ingredients(drink: Drink) -> dict[str, dict[str, str | float | None]]:
         ingredient.name: {
             "category": ingredient.category,
             "alcohol_content": ingredient.alcohol_content,
-            "measurement": measurement,
+            "measurement": f"{measurement[0]} {measurement[1]}",
         }
         for ingredient, measurement in drink.ingredients.items()
     }
@@ -38,8 +38,8 @@ def create_drink() -> Response:
     drink_data = request.get_json()
 
     with Session(current_app.config["ENGINE"]) as session:
-        ingredients = {
-            Ingredient.add(session, ingredient["name"]): ingredient["measurement"]
+        ingredients={
+            Ingredient.add(name=ingredient["name"]): (ingredient["measurement"], ingredient["measurement_type"])
             for ingredient in drink_data["ingredients"]
         }
         drink = Drink(

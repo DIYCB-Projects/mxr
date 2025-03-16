@@ -9,10 +9,11 @@ from datetime import datetime  # noqa: TC003
 from os import getenv
 from typing import Self
 
-from sqlalchemy import ForeignKey, Index, MetaData, String, UniqueConstraint, select
+from sqlalchemy import ForeignKey, Index, MetaData, UniqueConstraint, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.ext.declarative import AbstractConcreteBase
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, object_session, relationship
 from sqlalchemy.orm.collections import attribute_keyed_dict
 
@@ -108,6 +109,18 @@ class LookupTableMixin:
         return item
 
 
+def drinks_ingredients_associations_creator(
+    ingredient: Ingredient,
+    measurement: tuple[str, str],
+) -> DrinkIngredientAssociation:
+    """Test."""
+    return DrinkIngredientAssociation(
+        ingredient=ingredient,
+        measurement_value=measurement[0],
+        measurement_type=measurement[1],
+    )
+
+
 class Drink(TableBase):
     """Table for drinks."""
 
@@ -132,13 +145,10 @@ class Drink(TableBase):
         cascade="all, delete-orphan",
     )
 
-    ingredients: AssociationProxy[dict[Ingredient, str]] = association_proxy(
+    ingredients: AssociationProxy[dict[Ingredient, tuple[str, str]]] = association_proxy(
         "drinks_ingredients_associations",
         "measurement",
-        creator=lambda ingredient_obj, measurement_str: DrinkIngredientAssociation(
-            ingredient=ingredient_obj,
-            measurement=measurement_str,
-        ),
+        creator=drinks_ingredients_associations_creator,
     )
 
 
@@ -178,12 +188,19 @@ class DrinkIngredientAssociation(TableBase):
 
     # fmt: off
 
-    drinks_id:      Mapped[int] = mapped_column(ForeignKey("drinks.id"))
-    ingredients_id: Mapped[int] = mapped_column(ForeignKey("ingredients.id"))
-    measurement:    Mapped[str] = mapped_column(String(50))
+    drinks_id:          Mapped[int] = mapped_column(ForeignKey("drinks.id"))
+    ingredients_id:     Mapped[int] = mapped_column(ForeignKey("ingredients.id"))
+    measurement_value:  Mapped[str]
+    measurement_type:   Mapped[str]
 
-    drink:          Mapped[Drink] = relationship(back_populates="drinks_ingredients_associations")
+    @hybrid_property
+    def measurement(self) -> tuple[str, str]:
+        """Measurement."""
+        return (self.measurement_value, self.measurement_type)
 
-    ingredient:     Mapped[Ingredient] = relationship()
+
+    drink:              Mapped[Drink] = relationship(back_populates="drinks_ingredients_associations")
+
+    ingredient:         Mapped[Ingredient] = relationship()
 
     # fmt: off
