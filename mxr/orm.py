@@ -13,7 +13,7 @@ from sqlalchemy import ForeignKey, Index, MetaData, String, UniqueConstraint, se
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.ext.declarative import AbstractConcreteBase
-from sqlalchemy.orm import DeclarativeBase, Mapped, Session, declared_attr, mapped_column, object_session, relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, object_session, relationship
 from sqlalchemy.orm.collections import attribute_keyed_dict
 
 from mxr.common import utc_now
