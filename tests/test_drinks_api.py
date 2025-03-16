@@ -62,8 +62,8 @@ def test_post_drink(client: FlaskClient) -> None:
         "preparation": "shake",
     }
     response = client.post("/drinks", json=json_data)
-    assert response.status_code == HTTPStatus.CREATED
     assert response.text == '{"id": 1}'
+    assert response.status_code == HTTPStatus.CREATED
 
     with Session(client.application.config["ENGINE"]) as session:
         raw_drink = session.execute(select(Drink).where(Drink.id == 1)).scalars().one()
