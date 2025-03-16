@@ -13,7 +13,7 @@ from sqlalchemy import ForeignKey, Index, MetaData, String, UniqueConstraint, se
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.ext.declarative import AbstractConcreteBase
-from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, object_session, relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, declared_attr, mapped_column, object_session, relationship
 from sqlalchemy.orm.collections import attribute_keyed_dict
 
 from mxr.common import utc_now
@@ -53,17 +53,20 @@ class IdTimestampColumns:
     updated_at: Mapped[datetime] = mapped_column(onupdate=utc_now, default=utc_now)
 
 
-class TableBase(AbstractConcreteBase, MXRDB, IdTimestampColumns):
+class TableBase(IdTimestampColumns, AbstractConcreteBase, MXRDB):
     """Base class for all tables."""
 
 
-# TODO(Richie): make this a mixin if we can
-class BaseLookupTable(IdTimestampColumns, AbstractConcreteBase, MXRDB):
+class LookupTableMixin:
     """A lookup table."""
 
     __table_args__ = (UniqueConstraint("name"),)
 
     name: Mapped[str]
+
+    def __init__(self, name: str) -> None:
+        """Init."""
+        self.name = name
 
     @classmethod
     def get(class_, session: Session, name: str) -> Self | None:
@@ -139,12 +142,24 @@ class Drink(TableBase):
     )
 
 
-class Ingredient(BaseLookupTable):
+class Ingredient(LookupTableMixin, TableBase):
     """Table for ingredients."""
 
     __tablename__ = "ingredients"
 
+    def __init__(
+        self,
+        name: str,
+        alcohol_content: float | None = None,
+        category: str | None = None,
+    ) -> None:
+        """Init."""
+        self.alcohol_content = alcohol_content
+        self.category = category
+        super().__init__(name)
+
     # fmt: off
+
     alcohol_content:   Mapped[float | None]
     category:          Mapped[str | None]
 
