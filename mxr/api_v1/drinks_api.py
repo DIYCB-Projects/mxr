@@ -32,20 +32,20 @@ def get_ingredients(drink: Drink) -> dict[str, dict[str, str | float | None]]:
     }
 
 
-# TODO(Richie): THis doesn't support egesting ingredients
 @drinks.route("/drinks", methods=["POST"])
 def create_drink() -> Response:
     """Create a drink."""
     drink_data = request.get_json()
 
     with Session(current_app.config["ENGINE"]) as session:
+        ingredients = {
+            Ingredient.add(session, ingredient["name"]): ingredient["measurement"]
+            for ingredient in drink_data["ingredients"]
+        }
         drink = Drink(
             name=drink_data["name"],
             garnish=drink_data.get("garnish"),
-            ingredients={
-                Ingredient(name=ingredient["name"]): ingredient["measurement"]
-                for ingredient in drink_data["ingredients"]
-            },
+            ingredients=ingredients,
             preparation=drink_data["preparation"],
         )
         session.add(drink)
