@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import logging
+
 # This is required because datetime is required during runtime fro sqlalchemy
 from datetime import datetime  # noqa: TC003
 from os import getenv
+from typing import Self
 
-from sqlalchemy import ForeignKey, Index, MetaData, String, UniqueConstraint
+from sqlalchemy import ForeignKey, Index, MetaData, String, UniqueConstraint, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 from sqlalchemy.ext.declarative import AbstractConcreteBase
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, object_session, relationship
@@ -52,6 +56,53 @@ class IdTimestampColumns:
 class TableBase(AbstractConcreteBase, MXRDB, IdTimestampColumns):
     """Base class for all tables."""
 
+# TODO(Richie): make this a mixin if we can
+class BaseLookupTable(IdTimestampColumns, AbstractConcreteBase, MXRDB):
+    """A lookup table."""
+
+    __table_args__ = (UniqueConstraint("name"),)
+
+    name: Mapped[str]
+
+    @classmethod
+    def get(class_, session: Session, name: str) -> Self | None:
+        """Get a lookup table by name.
+
+        Args:
+            name (str): The name of the lookup table.
+            session (Session): The sqlalchemy session to use.
+
+        Returns:
+            BaseLookupTable | None`: The lookup table, or None if not found.
+        """
+        return session.scalars(select(class_).where(class_.name == name)).one_or_none()
+
+    @classmethod
+    def add(class_, session: Session, name: str) -> Self:
+        """Add a lookup table.
+
+        Args:
+            name (str): The name of the lookup table.
+            session (Session): The sqlalchemy session to use.
+
+        Returns:
+            BaseLookupTable: The lookup table.
+        """
+        if item := class_.get(session, name):
+            return item
+
+        try:
+            item = class_(name=name)
+            session.add(item)
+            session.commit()
+        except IntegrityError:
+            if item := class_.get(session, name):
+                msg = f"Duplicate item in lookup table {name}"
+                logging.info(msg)
+                return item
+            raise
+        return item
+
 
 class Drink(TableBase):
     """Table for drinks."""
@@ -87,14 +138,12 @@ class Drink(TableBase):
     )
 
 
-class Ingredient(TableBase):
+class Ingredient(BaseLookupTable):
     """Table for ingredients."""
 
     __tablename__ = "ingredients"
-    __table_args__ = (UniqueConstraint("name"),)
 
     # fmt: off
-    name:              Mapped[str]
     alcohol_content:   Mapped[float | None]
     category:          Mapped[str | None]
 
