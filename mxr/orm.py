@@ -109,15 +109,24 @@ class LookupTableMixin:
         return item
 
 
+class Measurement:
+    """Measurement."""
+
+    def __init__(self, value: str, type_: str) -> None:
+        """Init."""
+        self.value = value
+        self.type_ = type_
+
+
 def drinks_ingredients_associations_creator(
     ingredient: Ingredient,
-    measurement: tuple[str, str],
+    measurement: Measurement,
 ) -> DrinkIngredientAssociation:
     """Test."""
     return DrinkIngredientAssociation(
         ingredient=ingredient,
-        measurement_value=measurement[0],
-        measurement_type=measurement[1],
+        measurement_value=measurement.value,
+        measurement_type=measurement.type_,
     )
 
 
@@ -145,7 +154,7 @@ class Drink(TableBase):
         cascade="all, delete-orphan",
     )
 
-    ingredients: AssociationProxy[dict[Ingredient, tuple[str, str]]] = association_proxy(
+    ingredients: AssociationProxy[dict[Ingredient, Measurement]] = association_proxy(
         "drinks_ingredients_associations",
         "measurement",
         creator=drinks_ingredients_associations_creator,
@@ -194,9 +203,9 @@ class DrinkIngredientAssociation(TableBase):
     measurement_type:   Mapped[str]
 
     @hybrid_property
-    def measurement(self) -> tuple[str, str]:
+    def measurement(self) -> Measurement:
         """Measurement."""
-        return (self.measurement_value, self.measurement_type)
+        return Measurement(self.measurement_value, self.measurement_type)
 
 
     drink:              Mapped[Drink] = relationship(back_populates="drinks_ingredients_associations")
