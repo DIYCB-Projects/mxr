@@ -39,7 +39,7 @@ def create_drink() -> Response:
 
     with Session(current_app.config["ENGINE"]) as session:
         ingredients = {
-            Ingredient.add(name=ingredient["name"]): Measurement(
+            Ingredient.add(session, name=ingredient["name"]): Measurement(
                 ingredient["measurement"],
                 ingredient["measurement_type"],
             )
