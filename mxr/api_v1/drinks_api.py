@@ -6,7 +6,7 @@ from flask import Blueprint, Response, current_app, request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from mxr.orm import Drink, Ingredient
+from mxr.orm import Drink, Ingredient, Measurement
 
 drinks = Blueprint("drinks", __name__, template_folder="templates")
 
@@ -26,7 +26,7 @@ def get_ingredients(drink: Drink) -> dict[str, dict[str, str | float | None]]:
         ingredient.name: {
             "category": ingredient.category,
             "alcohol_content": ingredient.alcohol_content,
-            "measurement": measurement,
+            "measurement": f"{measurement.value} {measurement.type_}",
         }
         for ingredient, measurement in drink.ingredients.items()
     }
@@ -39,7 +39,10 @@ def create_drink() -> Response:
 
     with Session(current_app.config["ENGINE"]) as session:
         ingredients = {
-            Ingredient.add(session, ingredient["name"]): ingredient["measurement"]
+            Ingredient.add(session, name=ingredient["name"]): Measurement(
+                ingredient["measurement"],
+                ingredient["measurement_type"],
+            )
             for ingredient in drink_data["ingredients"]
         }
         drink = Drink(
@@ -74,7 +77,7 @@ def get_drinks() -> Response:
             ]
         )
 
-    return Response(status=201, response=drinks_data)
+    return Response(status=200, response=drinks_data)
 
 
 @drinks.route("/drinks/<int:id>")
@@ -84,7 +87,7 @@ def get_drink(id: int) -> Response:
         drink = session.execute(select(Drink).where(Drink.id == id)).scalars().one()
 
         return Response(
-            status=201,
+            status=200,
             response=json.dumps(
                 {
                     "id": drink.id,

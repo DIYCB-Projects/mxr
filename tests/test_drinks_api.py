@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from mxr.orm import Drink, Ingredient
+from mxr.orm import Drink, Ingredient, Measurement
 
 if TYPE_CHECKING:
     from flask.testing import FlaskClient
@@ -28,8 +28,8 @@ def test_get_drinks(client: FlaskClient) -> None:
             name="The best drink ever",
             garnish="A little umbrella",
             ingredients={
-                Ingredient(name="love", category="sweet"): "1 ML",
-                Ingredient(name="bread", category="sweet"): "100 ML",
+                Ingredient(name="love", category="sweet"): Measurement("1", "ML"),
+                Ingredient(name="bread", category="sweet"): Measurement("100", "ML"),
             },
             preparation="Exuberant shaking",
         )
@@ -56,8 +56,8 @@ def test_post_drink(client: FlaskClient) -> None:
     json_data = {
         "name": "No name",
         "ingredients": [
-            {"name": "vodka", "measurement": "1 ML"},
-            {"name": "xanax", "measurement": "100 ML"},
+            {"name": "vodka", "measurement": "1", "measurement_type": "ML"},
+            {"name": "xanax", "measurement": "100", "measurement_type": "ML"},
         ],
         "preparation": "shake",
     }
@@ -68,9 +68,12 @@ def test_post_drink(client: FlaskClient) -> None:
     with Session(client.application.config["ENGINE"]) as session:
         raw_drink = session.execute(select(Drink).where(Drink.id == 1)).scalars().one()
         assert raw_drink.name == "No name"
-        assert {ingredient.name: measurement for ingredient, measurement in raw_drink.ingredients.items()} == {
-            "vodka": "1 ML",
-            "xanax": "100 ML",
+        assert {
+            ingredient.name: (measurement.value, measurement.type_)
+            for ingredient, measurement in raw_drink.ingredients.items()
+        } == {
+            "vodka": ("1", "ML"),
+            "xanax": ("100", "ML"),
         }
         assert raw_drink.preparation == "shake"
 
@@ -82,8 +85,8 @@ def test_get_drinks_id(client: FlaskClient) -> None:
             name="The best drink ever",
             garnish="A little umbrella",
             ingredients={
-                Ingredient(name="love", category="sweet"): "1 ML",
-                Ingredient(name="bread", category="sweet"): "100 ML",
+                Ingredient(name="love", category="sweet"): Measurement("1", "ML"),
+                Ingredient(name="bread", category="sweet"): Measurement("100", "ML"),
             },
             preparation="Exuberant shaking",
         )
@@ -108,7 +111,7 @@ def test_update_drink(client: FlaskClient) -> None:
     with Session(client.application.config["ENGINE"]) as session:
         drink = Drink(
             name="original",
-            ingredients={Ingredient(name="nothing", category="empty"): "0 grams"},
+            ingredients={Ingredient(name="nothing", category="empty"): Measurement("0", "grams")},
             preparation="test",
         )
         session.add(drink)
@@ -119,7 +122,8 @@ def test_update_drink(client: FlaskClient) -> None:
     with Session(client.application.config["ENGINE"]) as session:
         raw_drink = session.execute(select(Drink).where(Drink.id == 1)).scalars().one()
         assert raw_drink.name == "old school"
-        assert {ingredient.name: measurement for ingredient, measurement in raw_drink.ingredients.items()} == {
-            "nothing": "0 grams"
-        }
+        assert {
+            ingredient.name: (measurement.value, measurement.type_)
+            for ingredient, measurement in raw_drink.ingredients.items()
+        } == {"nothing": ("0", "grams")}
         assert raw_drink.preparation == "test"
