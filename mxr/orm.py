@@ -6,6 +6,7 @@ import logging
 
 # This is required because datetime is required during runtime fro sqlalchemy
 from datetime import datetime  # noqa: TC003
+from enum import StrEnum
 from os import getenv
 from typing import Self
 
@@ -106,6 +107,23 @@ class LookupTableMixin:
                 return item
             raise
         return item
+
+
+class MeasurementType(StrEnum):
+    """Measurement type."""
+
+    OUNCE = "ounce"
+    GILL = "gill"
+    CUP = "cup"
+    PINT = "pint"
+    BOTTLE = "bottle"
+    DROP = "drop"
+    FLUID_OUNCE = "fluid_ounce"
+    GALLON = "gallon"
+    GRAMS = "grams"
+    ML = "ml"
+    QUART = "quart"
+    TABLESPOON = "tablespoon"
 
 
 class Drink(TableBase):
