@@ -77,7 +77,7 @@ def get_drinks() -> Response:
             ]
         )
 
-    return Response(status=201, response=drinks_data)
+    return Response(status=200, response=drinks_data)
 
 
 @drinks.route("/drinks/<int:id>")
@@ -87,7 +87,7 @@ def get_drink(id: int) -> Response:
         drink = session.execute(select(Drink).where(Drink.id == id)).scalars().one()
 
         return Response(
-            status=201,
+            status=200,
             response=json.dumps(
                 {
                     "id": drink.id,
